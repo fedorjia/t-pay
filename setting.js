@@ -1,12 +1,12 @@
 // const isDev = process.env.NODE_ENV === 'development';
 
 const setting = {
-    appname: 'node-express-boilerplate',
+    appname: 't-pay',
     port: 3000,
     mongo : {
         host:"localhost",
         port: 27017,
-        dbname: "node_express_boilerplate"
+        dbname: "t_pay"
     }
 };
 

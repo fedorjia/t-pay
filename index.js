@@ -19,7 +19,7 @@ app.use(expressValidator()); // validator
 app.use(helmet()); // secure Express apps
 
 // static
-app.use(express.static(__dirname + '/public', {maxAge: 86400000 * 7}));
+// app.use(express.static(__dirname + '/public', {maxAge: 86400000 * 7}));
 // middleware
 app.use(res);
 // router

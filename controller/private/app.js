@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({mergeParams: true});
 
-const service = require('../../service/app');
+const appService = require('../../service/app');
 const { body, validationResult } = require('express-validator/check');
 const ValidateError = require('../../error/validate-error');
 
@@ -17,9 +17,12 @@ router.post('', [
 		if (!errors.isEmpty()) {
 			return res.failure(new ValidateError(errors.array()));
 		}
+		if(!req.config) {
+			return res.failure('config required')
+		}
 
 		const { name, desc, config } = req.body;
-		const appid = await service.create({
+		const appid = await appService.create({
 			name, desc, config
 		});
 		res.success(appid);
@@ -34,7 +37,7 @@ router.post('', [
  */
 router.get('', async (req, res, next) => {
 	try {
-		res.success(await service.get());
+		res.success(await appService.get());
 	} catch (err) {
 		next(err);
 	}
@@ -47,7 +50,7 @@ router.get('', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
 	try {
 		const id = req.params.id;
-		res.success(await service.detail(id));
+		res.success(await appService.detail(id));
 	} catch (err) {
 		next(err);
 	}

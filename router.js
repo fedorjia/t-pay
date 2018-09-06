@@ -2,6 +2,6 @@
 const express = require('express');
 const router = express.Router();
 
-router.use('/pay', require('./controller/wxpay'));
+router.use('/private/app', require('./controller/private/app'));
 
 module.exports = router;
