@@ -3,7 +3,7 @@ const Model = require('./index');
 class App extends Model {
 
 	constructor() {
-		super('apps');
+		super({collection: 'apps'});
 	}
 }
 

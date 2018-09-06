@@ -1,27 +1,41 @@
 const ObjectID = require('mongodb').ObjectID;
+const setting = require('../setting')
+const DEFAULT_DB = setting.mongo.dbname
 
 class Model {
 
-	constructor(collection) {
+	constructor({db = DEFAULT_DB, collection = null}) {
 		this.collection = collection
+		this.db = db
 	}
 
 	_co() {
-		return mongo.collection(this.collection);
+		if(!this.database) {
+			this.database = mongoClient.db(this.db)
+		}
+		return this.database.collection(this.collection);
 	}
 
 	/**
 	 * save
 	 */
-	async save(data) {
-		return await this._co().save(data);
+	async insertOne(data) {
+		const obj = await this._co().insertOne(data);
+		return obj.ops[0]._id
+	}
+
+	/**
+	 * findById
+	 */
+	async findById(id) {
+		return await this._co().findOne({_id: ObjectID(id)});
 	}
 
 	/**
 	 * findOne
 	 */
-	async findOne(id) {
-		return await this._co().findOne({_id:ObjectID(id)});
+	async findOne(q) {
+		return await this._co().findOne(q);
 	}
 
 	/**
@@ -37,10 +51,12 @@ class Model {
 				})
 				.limit(limit)
 				.sort(sort)
+				.toArray()
 		} else {
 			return await this._co().find(q)
 				.limit(limit)
 				.sort(sort)
+				.toArray()
 		}
 	}
 }

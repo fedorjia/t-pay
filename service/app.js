@@ -7,7 +7,7 @@ module.exports = {
 		const now = Date.now()
 		data.created_at = now
 		data.updated_at = now
-		return await model.save(data)
+		return await model.insertOne(data)
 	},
 
 	async get() {
@@ -15,6 +15,6 @@ module.exports = {
 	},
 
 	async detail(id) {
-		return await model.findOne(id)
+		return await model.findById(id)
 	}
 };

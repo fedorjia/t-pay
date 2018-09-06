@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router({mergeParams: true});
 
-const appService = require('../../service/app');
 const { body, validationResult } = require('express-validator/check');
 const ValidateError = require('../../error/validate-error');
 
+const appService = require('../../service/app');
 
 /**
  * create app
@@ -17,13 +17,16 @@ router.post('', [
 		if (!errors.isEmpty()) {
 			return res.failure(new ValidateError(errors.array()));
 		}
-		if(!req.config) {
+
+		const { name, desc, config } = req.body;
+		if(!config) {
 			return res.failure('config required')
 		}
 
-		const { name, desc, config } = req.body;
 		const appid = await appService.create({
-			name, desc, config
+			name,
+			desc,
+			config: JSON.parse(config)
 		});
 		res.success(appid);
 	} catch (err) {
