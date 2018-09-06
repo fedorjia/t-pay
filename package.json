@@ -1,0 +1,33 @@
+{
+  "name": "wx-pay-node",
+  "version": "1.0.0",
+  "description": "wx-pay-node",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "wechat,weixin,nodejs"
+  ],
+  "author": "Fedor",
+  "license": "ISC",
+  "homepage": "",
+  "devDependencies": {
+    "cross-env": "^5.2.0"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "express": "^4.16.2",
+    "express-validator": "^5.3.0",
+    "helmet": "^3.9.0",
+    "mongodb": "^3.1.4",
+    "request": "^2.74.0",
+    "xml2js": "^0.4.17"
+  }
+}
