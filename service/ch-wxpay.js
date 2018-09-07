@@ -29,6 +29,13 @@ const __sign = function (data, key) {
 	return md5(str).toUpperCase();
 };
 
+/**
+ * 微信notify返回格式
+ */
+const notifyMsg = function(msg, tag = 'FAIL') {
+	return `<xml><return_code><![CDATA[${tag}]]</return_code><return_code><![CDATA[${msg}]]</return_code></xml>`
+}
+
 module.exports = {
 	/**
 	 * 创建订单、调用微信支付
@@ -97,20 +104,20 @@ module.exports = {
 			parseString(response.body, (err, result) => {
 				if (err) {
 					return reject(err.message);
-				} else {
-					const xml = result.xml;
-					if (xml.return_code[0] === 'FAIL') {
-						return reject(xml.return_msg[0]);
-					}
-					if (xml.result_code[0] === 'FAIL') {
-						return reject(xml.err_code[0]);
-					}
-					return resole({
-						trade_type: xml.trade_type[0],
-						prepay_id: xml.prepay_id[0],
-						code_url: xml.code_url? xml.code_url[0]: ''
-					});
 				}
+
+				const xml = result.xml;
+				if (xml.return_code[0] === 'FAIL') {
+					return reject(xml.return_msg[0]);
+				}
+				if (xml.result_code[0] === 'FAIL') {
+					return reject(xml.err_code[0]);
+				}
+				return resole({
+					trade_type: xml.trade_type[0],
+					prepay_id: xml.prepay_id[0],
+					code_url: xml.code_url? xml.code_url[0]: ''
+				});
 			});
 		});
 	},
@@ -119,15 +126,15 @@ module.exports = {
 		return new Promise((resolve, reject) => {
 			parseString(body, async (error, result) => {
 				if (error) {
-					throw new Error(error.message)
+					return reject(notifyMsg(error.message))
 				}
 
 				const xml = result.xml;
 				if (xml.return_code[0] === 'FAIL') {
-					return reject(xml.return_msg[0])
+					return reject(notifyMsg(xml.return_msg[0]))
 				}
 				if (xml.result_code[0] === 'FAIL') {
-					return reject(xml.err_code[0])
+					return reject(notifyMsg(xml.err_code[0]))
 				}
 
 				const orderid = xml.out_trade_no[0]
@@ -136,21 +143,26 @@ module.exports = {
 
 				const order = await orderModel.findById(orderid)
 				if (!order) {
-					throw new Error('order not found')
+					return reject(notifyMsg('order not found'))
 				}
 				if (order.status === payStatus.PAID) {
-					throw new Error('order had been paid')
+					return reject(notifyMsg('order had been paid'))
 				}
 				if (order.amount !== amount) {
-					throw new Error('order amount incorrect')
+					return reject(notifyMsg('order amount incorrect'))
 				}
 
-				return await orderModel.findByIdAndUpdate(orderid, {
+				const o =  await orderModel.findByIdAndUpdate(orderid, {
 					$set: {
 						status: payStatus.PAID,
 						transaction_id: transaction_id,
 						updated_at: Date.now()
 					}
+				})
+
+				reject({
+					order: o,
+					output: notifyMsg('SUCCESS', 'SUCCESS')
 				})
 			});
 		})

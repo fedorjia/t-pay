@@ -2,7 +2,7 @@ const {validator} = require('../helper/util')
 const appService = require('../service/app')
 
 // except urls
-const excepts = ['/favicon.ico', '/private', '/notify'];
+const excepts = ['/favicon.ico', '/private', '/notify']
 
 /**
  * authorization
@@ -42,4 +42,4 @@ module.exports = async(req, res, next) => {
 	} catch (err) {
 		return res.failure(err.message)
 	}
-};
+}

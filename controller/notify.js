@@ -3,12 +3,6 @@ const router = express.Router()
 
 const getService = require('../generic/service')
 const appService = require('../service/app')
-/***
- * notify result
- */
-const print = function(res, code, msg) {
-	res.send(`<xml><return_code><![CDATA[${code}]]</return_code><return_code><![CDATA[${msg}]]</return_code></xml>`);
-}
 
 /**
  * 支付异步通知
@@ -29,12 +23,14 @@ router.post('/notify/:channel', (req, res) => {
 		}
 
 		try {
-			const order = await service.notify(body)
+			const {order, output} = await service.notify(body)
 			const app = appService.detail(order.appid)
+			// redirect notify_url
 			res.redirect(`${app.notify_url}?status=${order.status}&transaction_id=${order._id}&trade_no=${order.trade_no}`)
-			print(res, 'SUCCESS', 'SUCCESS')
+			// notify wxpay
+			res.send(output)
 		} catch (err) {
-			print(res, 'FAIL', error.message)
+			res.send(error.message)
 		}
 	})
 })
