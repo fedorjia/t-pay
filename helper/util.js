@@ -27,31 +27,31 @@ exports.isURL = function(url) {
 };
 
 /***
- * is
+ * validator
  */
-exports.is = {
+exports.validator = {
 
-	number(str) {
+	isNumber(str) {
 		return !isNaN(parseFloat(str)) && isFinite(str);
 	},
 
-	string(str) {
+	isString(str) {
 		return typeof str === 'string';
 	},
 
-	object(str) {
+	isObject(str) {
 		return typeof str === 'object';
 	},
 
-	array(o) {
+	isArray(o) {
 		return Array.isArray(o);
 	},
 
-	integer(str) {
+	isInteger(str) {
 		return !isNaN(str) && (str * 1 === parseInt(str, 10));
 	},
 
-	empty(str) {
+	isEmpty(str) {
 		return str === null || str === undefined || str.length === 0;
 	}
 };

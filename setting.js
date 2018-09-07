@@ -7,7 +7,9 @@ const setting = {
         host:"localhost",
         port: 27017,
         dbname: "t_pay"
-    }
+    },
+
+	notifyURL: 'https://api.housebringer.com/tpay/notify'
 };
 
 module.exports = setting;

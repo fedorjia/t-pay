@@ -39,6 +39,31 @@ class Model {
 	}
 
 	/**
+	 * findOneAndUpdate
+	 */
+	async findOneAndUpdate(q, set) {
+		return await this._co().findOneAndUpdate(q, {
+			$set: set
+		});
+	}
+
+	/**
+	 * findByIdAndUpdate
+	 */
+	async findByIdAndUpdate(id, set) {
+		return await this._co().findOneAndUpdate({_id: ObjectID(id)}, {
+			$set: set
+		});
+	}
+
+	/**
+	 * findOneAndDelete
+	 */
+	async findOneAndDelete(q) {
+		return await this._co().findOneAndDelete(q);
+	}
+
+	/**
 	 * get
 	 */
 	async get(q = {}, skip = null, limit = 20, sort = {_id: -1}) {

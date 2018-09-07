@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router({mergeParams: true});
-
 const { body, validationResult } = require('express-validator/check');
-const ValidateError = require('../../error/validate-error');
 
+const ValidateError = require('../../error/validate-error');
 const appService = require('../../service/app');
 
 /**
