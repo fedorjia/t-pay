@@ -9,14 +9,18 @@ module.exports = {
 		data.created_at = now
 		data.updated_at = now
 
-		if (!isURL(data.notify_url)) {
-			throw new Error('invlaid notify_url')
+		if (!data.config || typeof data.config !== 'object') {
+			throw 'invlaid config'
 		}
-		if (data.domain.startsWith('http://') || data.domain.startsWith('https://')) {
-			throw new Error('invlaid domain')
+		if (!isURL(data.config.notify_url)) {
+			throw 'invlaid notify_url'
 		}
-		if (!data.notify_url.startsWith(`http://${data.domain}`) || !data.notify_url.startsWith(`https://${data.domain}`)) {
-			throw new Error('notify_url must in domain scope')
+		if (data.config.domain.startsWith('http://') || data.config.domain.startsWith('https://')) {
+			throw 'invlaid domain'
+		}
+		if (!data.config.notify_url.startsWith(`http://${data.config.domain}`) &&
+			!data.config.notify_url.startsWith(`https://${data.config.domain}`)) {
+			throw 'notify_url must in domain scope'
 		}
 
 		return await model.insertOne(data)

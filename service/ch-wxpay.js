@@ -52,7 +52,7 @@ module.exports = {
 			orderId = await orderModel.insertOne(data)
 		} else { // 订单已存在
 			if (data.status !== payStatus.UNPAID) { // 订单状态需未支付
-				throw new Error('order status should unpaid')
+				throw 'order status should unpaid'
 			}
 			// 更新订单
 			data.updated_at = now
@@ -65,11 +65,11 @@ module.exports = {
 		// 获取app信息
 		const app = await appModel.findById(data.appid)
 		if (!app) {
-			throw new Error('app not found')
+			throw 'app not found'
 		}
 		const conf = app.config
 		if (!conf || !conf.app_id || !conf.mch_secret || !conf.mch_id) {
-			throw new Error('invalid app info')
+			throw 'invalid app info'
 		}
 
 		// 封装微信统一支付参数
@@ -99,7 +99,7 @@ module.exports = {
 		});
 
 		if (response.statusCode !== 200) {
-			throw new Error(`微信统一支付错误，statusCode: ${response.statusCode}`)
+			throw `微信统一支付错误，statusCode: ${response.statusCode}`
 		}
 
 		return new Promise((resolve, reject) => {

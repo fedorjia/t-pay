@@ -2,7 +2,7 @@ const {validator} = require('../helper/util')
 const appService = require('../service/app')
 
 // except urls
-const excepts = ['/favicon.ico', '/private', '/notify']
+const excepts = ['/tpay/favicon.ico', '/tpay/private', '/tpay/notify']
 
 /**
  * authorization

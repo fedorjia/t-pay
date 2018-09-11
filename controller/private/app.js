@@ -15,9 +15,9 @@ const appService = require('../../service/app');
  *	config: 	[optional] 配置项
  */
 router.post('', [
-	body('name', 'name required').trim().isEmpty(),
-	body('domain', 'domain required').trim().isEmpty(),
-	body('notify_url', 'notify_url required').trim().isEmpty()
+	body('name', 'name required').trim().not().isEmpty(),
+	body('domain', 'domain required').trim().not().isEmpty(),
+	body('notify_url', 'notify_url required').trim().not().isEmpty()
 ], async (req, res, next) => {
 	try {
 		const errors = validationResult(req);
@@ -30,20 +30,24 @@ router.post('', [
 			desc,
 			domain,
 			notify_url,
-			config = {}
+			config
 		} = req.body;
 
 		if(!config) {
 			return res.failure('config required')
 		}
+		if (typeof config === 'string') {
+			return res.failure('config should json serializable')
+		}
 
 		const appid = await appService.create({
 			name,
 			desc,
-			domain,
-			notify_url,
 			secret: unique(32),
-			config: JSON.parse(config)
+			config: Object.assign(config, {
+				domain,
+				notify_url
+			})
 		});
 		res.success(appid);
 	} catch (err) {
