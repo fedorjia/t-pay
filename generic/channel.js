@@ -8,18 +8,28 @@ const channels = {
 	WX_SCAN: 'wx_scan' 		// 微信扫码支付
 }
 
+exports.channels = channels
+
 /**
  * 是否支付渠道
  */
 exports.isChannel = function(name) {
-	return typeof channels[name] !== 'undefined'
+	let is = false
+	for(let prop in channels) {
+		if (channels[prop] === name) {
+			is = true
+			break
+		}
+	}
+	return is
 }
 
 /**
  * 获取渠道特殊的API参数
  */
-exports.getChannelAPIData = function(obj) {
-	switch (obj.channel) {
+exports.getChannelAPIData = function(channel, extra) {
+	let obj = {}
+	switch (channel) {
 		case channels.WX_APP:
 			obj.trade_type = 'APP'
 			break
@@ -29,9 +39,8 @@ exports.getChannelAPIData = function(obj) {
 		case channels.WX_LITE:
 		case channels.WX_PUB:
 			obj.trade_type = 'JSAPI'
+			obj.openid = extra.openid
 			break
 	}
 	return obj
 }
-
-exports.channels = channels

@@ -43,13 +43,13 @@ module.exports = {
 	 */
 	async create(data) {
 		const now = Date.now()
-
+		let orderId
 		let order = await orderModel.findOne({appid: data.appid, trade_no: data.trade_no})
 		if (!order) { // 订单不存在，创建订单
 			data.created_at = now
 			data.updated_at = now
 			data.status = payStatus.UNPAID
-			order._id = await orderModel.insertOne(data)
+			orderId = await orderModel.insertOne(data)
 		} else { // 订单已存在
 			if (data.status !== payStatus.UNPAID) { // 订单状态需未支付
 				throw new Error('order status should unpaid')
@@ -59,6 +59,7 @@ module.exports = {
 			order = await orderModel.findByIdAndUpdate(order._id, {
 				$set: data
 			})
+			orderId = order._id
 		}
 
 		// 获取app信息
@@ -66,31 +67,33 @@ module.exports = {
 		if (!app) {
 			throw new Error('app not found')
 		}
+		const conf = app.config
+		if (!conf || !conf.app_id || !conf.mch_secret || !conf.mch_id) {
+			throw new Error('invalid app info')
+		}
 
 		// 封装微信统一支付参数
-		const apiParam = getChannelAPIData({
-			appid: app.app_id,
-			mch_id: app.mch_id,
-			openid: data.extra.openid,
+		let apiParam = Object.assign({
+			appid: conf.app_id,
+			mch_id: conf.mch_id,
 			nonce_str: unique(32),
 			body: data.subject,
-			out_trade_no: order._id,
+			out_trade_no: orderId,
 			total_fee: data.amount,
-			spbill_create_ip: data.create_ip, // ip(req)  '120.26.115.144'
+			spbill_create_ip: data.client_ip, // ip(req)  '120.26.115.144'
 			notify_url: `${notifyURL}/${data.channel}`
-		});
+		}, getChannelAPIData(data.channel, data.extra))
 		// 签名
-		apiParam.sign = __sign(apiParam, app.mch_secret);
+		apiParam.sign = __sign(apiParam, conf.mch_secret)
 
-		let xmlstr = '<?xml version="1.0" encoding="utf-8"?><xml>';
+		let xmlstr = '<?xml version="1.0" encoding="utf-8"?><xml>'
 		for (let name in apiParam) {
-			xmlstr += '<' + name + '>' + apiParam[name] + '</' + name + '>';
+			xmlstr += '<' + name + '>' + apiParam[name] + '</' + name + '>'
 		}
-		xmlstr += '</xml>';
+		xmlstr += '</xml>'
 
 		// 调用微信统一支付API
 		const response = await request.postAsync({
-			method: 'POST',
 			url: WX_PAY_URL,
 			body: xmlstr
 		});
@@ -99,7 +102,7 @@ module.exports = {
 			throw new Error(`微信统一支付错误，statusCode: ${response.statusCode}`)
 		}
 
-		return new Promise((resole, reject) => {
+		return new Promise((resolve, reject) => {
 			// 解析微信下单返回的数据
 			parseString(response.body, (err, result) => {
 				if (err) {
@@ -113,7 +116,7 @@ module.exports = {
 				if (xml.result_code[0] === 'FAIL') {
 					return reject(xml.err_code[0]);
 				}
-				return resole({
+				return resolve({
 					trade_type: xml.trade_type[0],
 					prepay_id: xml.prepay_id[0],
 					code_url: xml.code_url? xml.code_url[0]: ''
@@ -122,6 +125,11 @@ module.exports = {
 		});
 	},
 
+	/**
+	 * notify
+	 * @param body
+	 * @returns {Promise<any>}
+	 */
 	async notify(body) {
 		return new Promise((resolve, reject) => {
 			parseString(body, async (error, result) => {
@@ -160,7 +168,7 @@ module.exports = {
 					}
 				})
 
-				reject({
+				return resolve({
 					order: o,
 					output: notifyMsg('SUCCESS', 'SUCCESS')
 				})

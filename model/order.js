@@ -1,10 +1,8 @@
 const Model = require('./index');
 
-class App extends Model {
+module.exports = class extends Model {
 
 	constructor() {
-		super('orders');
+		super({collection: 'orders'});
 	}
 }
-
-module.exports = App;

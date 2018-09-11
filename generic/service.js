@@ -2,8 +2,7 @@
  * get channel's service operation
  * @param channel
  */
-const {isChannel} = require('./channel')
-const {channels} = require('./const')
+const {isChannel, channels} = require('./channel')
 
 module.exports = function(channel) {
 	if (!isChannel(channel)) {

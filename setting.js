@@ -2,7 +2,7 @@
 
 const setting = {
     appname: 't-pay',
-    port: 3000,
+    port: 3004,
     mongo : {
         host:"localhost",
         port: 27017,

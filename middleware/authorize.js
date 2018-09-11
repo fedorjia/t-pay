@@ -15,26 +15,26 @@ module.exports = async(req, res, next) => {
 		}
 	}
 
-	const host = req.get('host')
-	const {app_id, app_secret} = req.headers
+	const host = req.hostname
+	const {appid, appsecret} = req.headers
 
-	if (validator.isEmpty(app_id)) {
+	if (validator.isEmpty(appid)) {
 		return res.failure('app_id required')
 	}
-	if (validator.isEmpty(app_secret)) {
+	if (validator.isEmpty(appsecret)) {
 		return res.failure('app_secret required')
 	}
 
 	try {
-		const app = await appService.detail(app_id)
+		const app = await appService.detail(appid)
 		if (!app) {
 			return res.failure('app not found')
 		}
-		if(host !== app.domain) {
-			return res.failure('invalid domain')
-		}
-		if(app_secret !== app.secret) {
-			return res.failure('app_secret incorrect')
+		// if(host !== app.config.domain) { // TODO
+		// 	return res.failure('invalid domain')
+		// }
+		if(appsecret !== app.secret) {
+			return res.failure('appsecret incorrect')
 		}
 
 		res.locals.app = app

@@ -3,13 +3,13 @@
  * @param channel
  * @param extra
  */
-const {isChannel} = require('./channel')
-const {channels} = require('./const')
+const {isChannel, channels} = require('./channel')
 const {validator} = require('../helper/util')
 
 function err(msg) {
 	return {
-		err: msg
+		err: msg,
+		result: null
 	}
 }
 
@@ -19,6 +19,7 @@ module.exports = function(channel, extra = {}) {
 	}
 
 	let errMsg = ''
+
 	switch (channel) {
 		case channels.WX_LITE: // 小程序
 		case channels.WX_PUB:  // 公众号
@@ -32,5 +33,8 @@ module.exports = function(channel, extra = {}) {
 		return err(errMsg)
 	}
 
-	return extra
+	return {
+		err: null,
+		result: extra
+	}
 }

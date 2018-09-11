@@ -1,5 +1,7 @@
 const express = require('express');
 const helmet = require('helmet');
+const request = require('request');
+const bluebird = require('bluebird');
 const bodyParser = require('body-parser');
 const expressValidator = require('express-validator');
 const cors = require('cors');
@@ -11,6 +13,7 @@ const router = require('./router');
 const setting = require('./setting');
 const responseStatus = require('./error/response-status');
 const res = require('./middleware/res');
+const authorize = require('./middleware/authorize');
 
 app.use(cors()); // CORS
 app.use(bodyParser.json());
@@ -18,10 +21,13 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(expressValidator()); // validator
 app.use(helmet()); // secure Express apps
 
+bluebird.promisifyAll(request);
+
 // static
 // app.use(express.static(__dirname + '/public', {maxAge: 86400000 * 7}));
 // middleware
 app.use(res);
+app.use(authorize);
 // router
 app.use(router);
 
