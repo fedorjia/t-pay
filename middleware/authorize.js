@@ -30,9 +30,9 @@ module.exports = async(req, res, next) => {
 		if (!app) {
 			return res.failure('app not found')
 		}
-		// if(host !== app.config.domain) { // TODO
-		// 	return res.failure('invalid domain')
-		// }
+		if(host !== app.config.domain) {
+			return res.failure('invalid domain')
+		}
 		if(appsecret !== app.secret) {
 			return res.failure('appsecret incorrect')
 		}

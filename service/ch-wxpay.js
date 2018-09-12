@@ -3,7 +3,7 @@ const parseString = require('xml2js').parseString;
 
 const WX_PAY_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 
-const {notifyURL} = require('../setting');
+const notifyURL = require('../setting').notifyURL
 const {md5, unique} = require('../helper/crypto');
 const {getChannelAPIData} = require('../generic/channel')
 const {payStatus} = require('../generic/const')
@@ -33,7 +33,7 @@ const __sign = function (data, key) {
  * 微信notify返回格式
  */
 const notifyMsg = function(msg, tag = 'FAIL') {
-	return `<xml><return_code><![CDATA[${tag}]]</return_code><return_code><![CDATA[${msg}]]</return_code></xml>`
+	return `<xml><return_code><![CDATA[${tag}]]></return_code><return_msg><![CDATA[${msg}]]></return_msg></xml>`
 }
 
 module.exports = {
@@ -147,7 +147,9 @@ module.exports = {
 
 				const orderid = xml.out_trade_no[0]
 				const transaction_id = xml.transaction_id[0]
-				const amount = xml.total_fee[0]
+				const amount = xml.total_fee[0] * 1
+
+				console.log(`order_id: ${orderid}` )
 
 				const order = await orderModel.findById(orderid)
 				if (!order) {
@@ -160,7 +162,10 @@ module.exports = {
 					return reject(notifyMsg('order amount incorrect'))
 				}
 
-				const o =  await orderModel.findByIdAndUpdate(orderid, {
+				console.log(`trade_no: ${order.trade_no}` )
+
+				// update order status
+				await orderModel.findByIdAndUpdate(orderid, {
 					$set: {
 						status: payStatus.PAID,
 						transaction_id: transaction_id,
@@ -168,10 +173,31 @@ module.exports = {
 					}
 				})
 
-				return resolve({
-					order: o,
-					output: notifyMsg('SUCCESS', 'SUCCESS')
-				})
+				// notify merchant
+				const app = await appModel.findById(order.appid)
+				if (!app) {
+					throw 'app not found'
+				}
+				const conf = app.config
+				if (!conf || !conf.app_id || !conf.mch_secret || !conf.mch_id) {
+					throw 'invalid app info'
+				}
+
+				const response = await request.getAsync({
+					url: conf.notify_url,
+					qs: {
+						channel: order.channel,
+						transaction_id: order._id.toString(),
+						trade_no: order.trade_no.toString(),
+						status: payStatus.PAID
+					},
+					json: true
+				});
+				if (response.statusCode !== 200) {
+					throw `更新商户订单失败，statusCode: ${response.statusCode}`
+				}
+
+				return resolve(notifyMsg('OK', 'SUCCESS'))
 			});
 		})
 	}

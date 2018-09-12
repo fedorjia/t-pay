@@ -42,18 +42,16 @@ class Model {
 	 * findOneAndUpdate
 	 */
 	async findOneAndUpdate(q, set) {
-		return await this._co().findOneAndUpdate(q, {
-			$set: set
-		});
+		const o = await this._co().findOneAndUpdate(q, set)
+		return o.value
 	}
 
 	/**
 	 * findByIdAndUpdate
 	 */
 	async findByIdAndUpdate(id, set) {
-		return await this._co().findOneAndUpdate({_id: ObjectID(id)}, {
-			$set: set
-		});
+		const o = await this._co().findOneAndUpdate({_id: ObjectID(id)}, set)
+		return o.value
 	}
 
 	/**
