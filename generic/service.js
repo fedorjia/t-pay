@@ -12,8 +12,8 @@ module.exports = function(channel) {
 	let service = null
 	switch (channel) {
 		case channels.WX_APP:
-		case channels.WX_LITE:
 		case channels.WX_PUB:
+		case channels.WX_LITE:
 		case channels.WX_SCAN:
 			service = require('../service/ch-wxpay')
 			break

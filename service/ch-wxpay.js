@@ -4,30 +4,14 @@ const parseString = require('xml2js').parseString;
 const WX_PAY_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder'
 
 const notifyURL = require('../setting').notifyURL
-const {md5, unique} = require('../helper/crypto');
-const {getChannelAPIData} = require('../generic/channel')
+const {unique} = require('../helper/crypto')
+const {sign4Wxpay} = require('../generic/signature')
+const {getRequestData, getPrepayData} = require('../generic/channel')
 const {payStatus} = require('../generic/const')
 const OrderModel = require('../model/order')
 const AppModel = require('../model/app')
 const orderModel = new OrderModel()
 const appModel = new AppModel()
-
-/**
- * 微信签名算法
- */
-const __sign = function (data, key) {
-	const keys = [];
-	for (let k in data) {
-		keys.push(k);
-	}
-	let str = '';
-	keys.sort();
-	keys.forEach((key) => {
-		str += (key + '=' + data[key] + '&');
-	});
-	str += 'key=' + key;
-	return md5(str).toUpperCase();
-};
 
 /**
  * 微信notify返回格式
@@ -82,9 +66,9 @@ module.exports = {
 			total_fee: data.amount,
 			spbill_create_ip: data.client_ip, // ip(req)  '120.26.115.144'
 			notify_url: `${notifyURL}/${data.channel}`
-		}, getChannelAPIData(data.channel, data.extra))
+		}, getRequestData(data.channel, data.extra))
 		// 签名
-		apiParam.sign = __sign(apiParam, conf.mch_secret)
+		apiParam.sign = sign4Wxpay(apiParam, conf.mch_secret)
 
 		let xmlstr = '<?xml version="1.0" encoding="utf-8"?><xml>'
 		for (let name in apiParam) {
@@ -106,21 +90,22 @@ module.exports = {
 			// 解析微信下单返回的数据
 			parseString(response.body, (err, result) => {
 				if (err) {
-					return reject(err.message);
+					return reject(err.message)
 				}
 
 				const xml = result.xml;
 				if (xml.return_code[0] === 'FAIL') {
-					return reject(xml.return_msg[0]);
+					return reject(xml.return_msg[0])
 				}
 				if (xml.result_code[0] === 'FAIL') {
-					return reject(xml.err_code[0]);
+					return reject(xml.err_code[0])
 				}
-				return resolve({
+
+				return resolve(getPrepayData(data.channel, conf, {
 					trade_type: xml.trade_type[0],
 					prepay_id: xml.prepay_id[0],
 					code_url: xml.code_url? xml.code_url[0]: ''
-				});
+				}))
 			});
 		});
 	},

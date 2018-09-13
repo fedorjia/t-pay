@@ -6,7 +6,7 @@ const setting = {
     mongo : {
         host:"localhost",
         port: 27017,
-        dbname: "t_pay"
+        dbname: "tpay"
     },
 
 	notifyURL: 'https://api.housebringer.com/tpay/notify'
